@@ -93,8 +93,24 @@
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
-  
 
+  <!-- Firebase Config -->
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyCzYltvIlyd9a7c1zv_nHbi_sG06cg9l9Yo",
+      authDomain: "worksense-822c4.firebaseapp.com",
+      projectId: "worksense-822c4",
+      storageBucket: "worksense-822c4.appspot.com",
+      messagingSenderId: "447733676713",
+      appId: "1:447733676713:web:12486d57ef923fc15247b8"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+  </script>
+
+  <!-- Registration Script -->
   <script>
     const registerForm = document.getElementById("registerForm");
     const message = document.getElementById("message");
