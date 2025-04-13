@@ -11,20 +11,26 @@
       background-size: cover;
       margin: 0;
       font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
     }
     .form-container {
       max-width: 500px;
-      margin: 80px auto;
+      width: 90%;
+      margin: 20px;
       padding: 40px;
       background-color: rgba(0, 0, 0, 0.85);
       border-radius: 12px;
       color: #e0e0e0;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.6);
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.7);
     }
     .form-container h2 {
       text-align: center;
       color: #55acee;
       margin-bottom: 30px;
+      font-size: 1.8em;
     }
     form {
       display: flex;
@@ -37,31 +43,47 @@
     }
     label {
       font-weight: bold;
-      margin-bottom: 5px;
+      margin-bottom: 8px;
+      color: #ccc;
     }
-    input {
-      padding: 12px;
+    input[type="text"],
+    input[type="email"],
+    input[type="password"] {
+      padding: 12px 15px;
       border-radius: 6px;
-      border: none;
+      border: 1px solid #555;
+      background-color: #333;
+      color: #eee;
       font-size: 1em;
     }
-    button {
+    input:focus {
+      outline: none;
+      border-color: #55acee;
+      box-shadow: 0 0 5px rgba(85, 172, 238, 0.5);
+    }
+    button[type="submit"] {
       background-color: #55acee;
       color: white;
-      padding: 12px;
+      padding: 14px;
       border: none;
       border-radius: 6px;
       cursor: pointer;
       font-weight: bold;
-      font-size: 1em;
+      font-size: 1.1em;
+      transition: background-color 0.3s ease;
     }
-    button:hover {
-      background-color: #1e3c56;
+    button[type="submit"]:hover {
+      background-color: #367fa9;
     }
     .message {
       text-align: center;
-      margin-top: 20px;
+      margin-top: 25px;
       font-size: 0.95em;
+      min-height: 1.2em;
+      color: #ffdddd;
+    }
+    .message.success {
+      color: #ddffdd;
     }
   </style>
 </head>
@@ -71,32 +93,28 @@
     <form id="registerForm">
       <div class="input-group">
         <label for="name">Full Name</label>
-        <input type="text" id="name" required />
+        <input type="text" id="name" name="name" required />
       </div>
-
       <div class="input-group">
         <label for="email">Email</label>
-        <input type="email" id="email" required />
+        <input type="email" id="email" name="email" required />
       </div>
-
       <div class="input-group">
         <label for="password">Password</label>
-        <input type="password" id="password" required />
+        <input type="password" id="password" name="password" required minlength="6" />
       </div>
-
       <button type="submit">Register</button>
     </form>
     <div class="message" id="message"></div>
   </div>
 
-  <!-- Firebase SDKs -->
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
   <script>
     const firebaseConfig = {
-      apiKey: "AIzaSyCzYltvIlyd9a7c1zv_nHbi_sGO6cg9l9Yo",
+      apiKey: "AIzaSyCzYltvlyd9a7c1zv_nHbi_sGO6cg9l9Yo",
       authDomain: "worksense-822c4.firebaseapp.com",
       projectId: "worksense-822c4",
       storageBucket: "worksense-822c4.appspot.com",
@@ -105,41 +123,95 @@
       measurementId: "G-H07TPLR5LJ"
     };
 
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const db = firebase.firestore();
-  </script>
-
-  <script>
-    const registerForm = document.getElementById("registerForm");
-    const message = document.getElementById("message");
-
-    registerForm.addEventListener("submit", async (e) => {
-      e.preventDefault();
-
-      const name = document.getElementById("name").value;
-      const email = document.getElementById("email").value;
-      const password = document.getElementById("password").value;
-
-      try {
-        const userCredential = await auth.createUserWithEmailAndPassword(email, password);
-        const user = userCredential.user;
-
-        await db.collection("users").doc(user.uid).set({
-          name,
-          email,
-          role: "worker",
-          createdAt: new Date()
-        });
-
-        message.innerText = "Account created successfully! Redirecting...";
-        setTimeout(() => {
-          window.location.href = "worker_dashboard.html";
-        }, 1500);
-      } catch (error) {
-        message.innerText = error.message;
+    let auth;
+    let db;
+    try {
+      firebase.initializeApp(firebaseConfig);
+      auth = firebase.auth();
+      db = firebase.firestore();
+      console.log("Firebase initialized successfully!");
+    } catch (error) {
+      console.error("FATAL: Firebase initialization failed:", error);
+      const messageDiv = document.getElementById("message");
+      if(messageDiv) {
+        messageDiv.innerText = "Error connecting to services. Please try again later.";
+        messageDiv.className = 'message';
       }
-    });
+      const registerButton = document.querySelector('#registerForm button[type="submit"]');
+      if(registerButton) {
+        registerButton.disabled = true;
+        registerButton.style.backgroundColor = '#aaa';
+      }
+    }
+
+    const registerForm = document.getElementById("registerForm");
+    const messageDiv = document.getElementById("message");
+
+    if (registerForm && auth && db && messageDiv) {
+      registerForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        messageDiv.innerText = "";
+        messageDiv.className = 'message';
+
+        const nameInput = document.getElementById("name");
+        const emailInput = document.getElementById("email");
+        const passwordInput = document.getElementById("password");
+
+        const name = nameInput.value.trim();
+        const email = emailInput.value.trim();
+        const password = passwordInput.value;
+
+        if (!name || !email || !password) {
+          messageDiv.innerText = "Please fill in all fields.";
+          return;
+        }
+        if (password.length < 6) {
+          messageDiv.innerText = "Password must be at least 6 characters long.";
+          return;
+        }
+
+        try {
+          const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+          const user = userCredential.user;
+          console.log("User created successfully:", user.uid);
+
+          await db.collection("users").doc(user.uid).set({
+            name: name,
+            email: email,
+            role: "worker",
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+          });
+          console.log("User data saved to Firestore.");
+
+          messageDiv.innerText = "Account created successfully! Redirecting...";
+          messageDiv.className = 'message success';
+          setTimeout(() => {
+            window.location.href = "worker_dashboard.html";
+          }, 1500);
+
+        } catch (error) {
+          console.error("Registration Error:", error);
+          let friendlyMessage = "Registration failed. Please try again.";
+          if (error.code === 'auth/email-already-in-use') {
+            friendlyMessage = "This email address is already registered.";
+          } else if (error.code === 'auth/weak-password') {
+            friendlyMessage = "Password is too weak. Please use a stronger password.";
+          } else if (error.code === 'auth/invalid-email') {
+            friendlyMessage = "Please enter a valid email address.";
+          } else if (error.message.includes('firestore/permission-denied')) {
+            friendlyMessage = "Could not save user data. Check permissions (Firebase Rules).";
+          }
+          messageDiv.innerText = friendlyMessage;
+          messageDiv.className = 'message';
+        }
+      });
+    } else {
+      console.error("Could not attach form listener. Check if form, auth, db, or messageDiv exist.");
+      if (messageDiv) {
+        messageDiv.innerText = "Error setting up the form. Please refresh the page.";
+        messageDiv.className = 'message';
+      }
+    }
   </script>
 </body>
 </html>
