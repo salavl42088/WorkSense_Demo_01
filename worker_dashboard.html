@@ -51,7 +51,7 @@
 </head>
 <body>
   <div class="dashboard-container">
-    <h1>Welcome to Your Dashboard</h1>
+    <h1 id="dashboardHeading">Welcome to Your Dashboard</h1>
     <p class="welcome" id="welcomeText">Loading...</p>
 
     <div class="dashboard-actions">
@@ -70,9 +70,14 @@
   <script>
     auth.onAuthStateChanged(async (user) => {
       if (user) {
-        const doc = await db.collection("users").doc(user.uid).get();
-        const name = doc.exists ? doc.data().name : "User";
-        document.getElementById("welcomeText").innerText = `Welcome, ${name}!`;
+        try {
+          const doc = await db.collection("users").doc(user.uid).get();
+          const name = doc.exists ? doc.data().name : "User";
+          document.getElementById("welcomeText").innerText = `Welcome, ${name}!`;
+          document.getElementById("dashboardHeading").innerText = `Welcome, ${name}`;
+        } catch (error) {
+          console.error("Failed to fetch user data:", error);
+        }
       } else {
         window.location.href = "login_worker.html";
       }
