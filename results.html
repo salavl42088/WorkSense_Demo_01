@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Assessment Results | WorkSense</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: url('images/Background.png') no-repeat center center fixed;
+      background-size: cover;
+      margin: 0;
+      color: #e0e0e0;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px;
+      background-color: rgba(0, 0, 0, 0.65);
+    }
+    header img {
+      height: 60px;
+    }
+    header h1 {
+      font-size: 2em;
+      color: #55acee;
+    }
+    nav {
+      display: flex;
+      gap: 20px;
+    }
+    nav a {
+      color: #e0e0e0;
+      text-decoration: none;
+      font-weight: bold;
+    }
+    nav a:hover {
+      color: #86d986;
+    }
+    .container {
+      flex: 1;
+      max-width: 700px;
+      margin: 40px auto;
+      padding: 40px;
+      background-color: rgba(0, 0, 0, 0.75);
+      border-radius: 10px;
+      text-align: center;
+    }
+    h2 {
+      font-size: 2em;
+      color: #55acee;
+      margin-bottom: 10px;
+    }
+    .score {
+      font-size: 1.5em;
+      color: #86d986;
+      margin-bottom: 30px;
+    }
+    .buttons a {
+      display: inline-block;
+      margin: 10px;
+      padding: 12px 20px;
+      background-color: #55acee;
+      color: white;
+      text-decoration: none;
+      border-radius: 6px;
+      font-weight: bold;
+    }
+    .buttons a:hover {
+      background-color: #1e3c56;
+    }
+    footer {
+      text-align: center;
+      padding: 20px;
+      background-color: rgba(0, 0, 0, 0.7);
+      font-size: 0.9em;
+      color: #888;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div style="display: flex; align-items: center; gap: 20px;">
+      <img src="images/LOGO.png" alt="WorkSense Logo">
+      <h1>WorkSense</h1>
+    </div>
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="worker_dashboard.html">Dashboard</a>
+      <a href="profile.html">Profile</a>
+    </nav>
+  </header>
+  <div class="container">
+    <h2>Assessment Complete!</h2>
+    <div class="score" id="scoreDisplay">Loading...</div>
+    <div class="buttons">
+      <a href="worker_dashboard.html">Back to Dashboard</a>
+      <a href="profile.html">View My Profile</a>
+    </div>
+  </div>
+  <footer>
+    &copy; 2025 WorkSense. All rights reserved.
+  </footer>
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
+  <script>
+    function getQueryParams() {
+      const params = {};
+      window.location.search.replace(/[?&]+([^=&]+)=([^&]*)/gi, function(m, key, value) {
+        params[key] = decodeURIComponent(value);
+      });
+      return params;
+    }
+
+    auth.onAuthStateChanged(async (user) => {
+      if (!user) {
+        window.location.href = "login_worker.html";
+        return;
+      }
+
+      const params = getQueryParams();
+      const assessment = params.assessment;
+      const score = parseInt(params.score);
+      const total = parseInt(params.total);
+
+      if (!assessment || isNaN(score) || isNaN(total)) {
+        document.getElementById("scoreDisplay").innerText = "Invalid or missing score data.";
+        return;
+      }
+
+      // Show the score
+      document.getElementById("scoreDisplay").innerText = `You scored ${score} out of ${total}`;
+
+      // Save it to Firestore under assessments collection inside user
+      const userRef = db.collection("users").doc(user.uid);
+      const updateField = {};
+      updateField[`assessments.${assessment}`] = {
+        score,
+        total,
+        date: new Date()
+      };
+      await userRef.set(updateField, { merge: true });
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Register as Employer | WorkSense</title>
+  <link rel="stylesheet" href="css/styles.css" />
+  <style>
+    body {
+      background: url('images/Background.png') no-repeat center center fixed;
+      background-size: cover;
+      margin: 0;
+      font-family: Arial, sans-serif;
+    }
+    .form-container {
+      max-width: 500px;
+      margin: 80px auto;
+      padding: 40px;
+      background-color: rgba(0, 0, 0, 0.85);
+      border-radius: 12px;
+      color: #e0e0e0;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.6);
+    }
+    .form-container h2 {
+      text-align: center;
+      color: #55acee;
+      margin-bottom: 30px;
+    }
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    .input-group {
+      display: flex;
+      flex-direction: column;
+    }
+    label {
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+    input {
+      padding: 12px;
+      border-radius: 6px;
+      border: none;
+      font-size: 1em;
+    }
+    button {
+      background-color: #55acee;
+      color: white;
+      padding: 12px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 1em;
+    }
+    button:hover {
+      background-color: #1e3c56;
+    }
+    .message {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 0.95em;
+    }
+  </style>
+</head>
+<body>
+  <div class="form-container">
+    <h2>Employer Registration</h2>
+    <form id="registerForm">
+      <div class="input-group">
+        <label for="company">Company Name</label>
+        <input type="text" id="company" required />
+      </div>
+
+      <div class="input-group">
+        <label for="email">Email</label>
+        <input type="email" id="email" required />
+      </div>
+
+      <div class="input-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" required />
+      </div>
+
+      <button type="submit">Register</button>
+    </form>
+    <div class="message" id="message"></div>
+  </div>
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
+
+  <script>
+    const registerForm = document.getElementById("registerForm");
+    const message = document.getElementById("message");
+
+    registerForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const company = document.getElementById("company").value;
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+
+      try {
+        const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+        const user = userCredential.user;
+
+        await db.collection("users").doc(user.uid).set({
+          company,
+          email,
+          role: "employer",
+          createdAt: new Date()
+        });
+
+        message.innerText = "Account created successfully! Redirecting...";
+        setTimeout(() => {
+          window.location.href = "employer_dashboard.html";
+        }, 1500);
+      } catch (error) {
+        message.innerText = error.message;
+      }
+    });
+  </script>
+</body>
+</html>

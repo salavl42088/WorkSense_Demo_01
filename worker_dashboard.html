@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Worker Dashboard | WorkSense</title>
+  <link rel="stylesheet" href="css/styles.css" />
+  <style>
+    body {
+      background: url('images/Background.png') no-repeat center center fixed;
+      background-size: cover;
+      margin: 0;
+      font-family: Arial, sans-serif;
+      color: #f0f0f0;
+    }
+    .dashboard-container {
+      max-width: 900px;
+      margin: 80px auto;
+      padding: 40px;
+      background-color: rgba(0, 0, 0, 0.85);
+      border-radius: 12px;
+      box-shadow: 0 0 12px rgba(0, 0, 0, 0.6);
+    }
+    h1 {
+      text-align: center;
+      color: #55acee;
+    }
+    .welcome {
+      font-size: 1.2em;
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    .dashboard-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    .dashboard-actions a {
+      background-color: #55acee;
+      color: white;
+      padding: 12px;
+      border-radius: 6px;
+      text-align: center;
+      text-decoration: none;
+      font-weight: bold;
+    }
+    .dashboard-actions a:hover {
+      background-color: #1e3c56;
+    }
+  </style>
+</head>
+<body>
+  <div class="dashboard-container">
+    <h1>Welcome to Your Dashboard</h1>
+    <p class="welcome" id="welcomeText">Loading...</p>
+
+    <div class="dashboard-actions">
+      <a href="worker_start.html">Take Skill Assessment</a>
+      <a href="profile.html">View My Profile</a>
+      <a href="#" onclick="logout()">Logout</a>
+    </div>
+  </div>
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
+
+  <script>
+    auth.onAuthStateChanged(async (user) => {
+      if (user) {
+        const doc = await db.collection("users").doc(user.uid).get();
+        const name = doc.exists ? doc.data().name : "User";
+        document.getElementById("welcomeText").innerText = `Welcome, ${name}!`;
+      } else {
+        window.location.href = "login_worker.html";
+      }
+    });
+
+    function logout() {
+      auth.signOut().then(() => {
+        window.location.href = "login_worker.html";
+      });
+    }
+  </script>
+</body>
+</html>
